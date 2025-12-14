@@ -1,5 +1,8 @@
 #!/bin/bash
 
+# Initialize SDKMAN
+source $HOME/.sdkman/bin/sdkman-init.sh
+
 echo "Starting Java Spring Development Environment..."
 echo "User: $(whoami)"
 echo "Home: $HOME"
@@ -97,7 +100,7 @@ class HelloController {
     
     @GetMapping("/")
     public String hello() {
-        return "Hello from Spring Boot in Coder!";
+        return "Hello from Spring Boot in Coder with SDKMAN!";
     }
     
     @GetMapping("/health")
@@ -126,6 +129,11 @@ echo "========================================"
 echo "Java: $(java -version 2>&1 | head -1)"
 echo "Maven: $(mvn -v 2>&1 | head -1)"
 echo "Project: ~/project"
+echo ""
+echo "SDKMAN installed! You can switch Java versions:"
+echo "  sdk list java"
+echo "  sdk install java <version>"
+echo "  sdk use java <version>"
 echo ""
 echo "Quick start:"
 echo "  cd ~/project"
