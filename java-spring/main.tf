@@ -106,7 +106,7 @@ module "git-clone" {
 module "opencode" {
   count  = data.coder_workspace.me.start_count
   source = "registry.coder.com/coder-labs/opencode/coder"
-  version = "~> 1.0"
+  version = "~> 0.1.1"
 
   agent_id           = coder_agent.main.id
   workdir            = "/home/coder/project"
