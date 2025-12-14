@@ -1,24 +1,22 @@
 #!/bin/bash
 
-# Initialize SDKMAN
+# Initialize SDKMAN for interactive shells
 source $HOME/.sdkman/bin/sdkman-init.sh
 
 echo "Starting Java Spring Development Environment..."
 echo "User: $(whoami)"
 echo "Home: $HOME"
 
-echo "Java version:"
-java -version
-
-echo "Maven version:"
-mvn -version
+echo ""
+echo "Installed tools:"
+echo "Java: $(java -version 2>&1 | head -1)"
+echo "Maven: $(mvn -v 2>&1 | head -1)"
+echo ""
 
 # Create project directory if it doesn't exist
 echo "Setting up project directory..."
 mkdir -p $HOME/project
 cd $HOME/project
-
-echo "Current directory: $(pwd)"
 
 # Initialize default project structure if empty
 if [ ! -f pom.xml ]; then
@@ -116,28 +114,27 @@ server.port=8080
 logging.level.root=INFO
 EOFPROPS
 
-  echo "Project structure created successfully"
+  echo "✓ Project structure created"
 fi
 
-echo "Downloading Maven dependencies (this may take a while)..."
+# Pre-download Maven dependencies to speed up first build
+echo "Pre-downloading Maven dependencies (this may take a moment)..."
 mvn dependency:resolve -q 2>/dev/null || true
 
 echo ""
 echo "========================================"
 echo "✓ Java Spring Development Environment Ready!"
 echo "========================================"
-echo "Java: $(java -version 2>&1 | head -1)"
-echo "Maven: $(mvn -v 2>&1 | head -1)"
-echo "Project: ~/project"
-echo ""
-echo "SDKMAN installed! You can switch Java versions:"
-echo "  sdk list java"
-echo "  sdk install java <version>"
-echo "  sdk use java <version>"
+echo "Location: ~/project"
 echo ""
 echo "Quick start:"
 echo "  cd ~/project"
 echo "  mvn spring-boot:run"
 echo ""
-echo "Then open: http://localhost:8080"
+echo "Access your app at: http://localhost:8080"
+echo ""
+echo "SDKMAN available for version management:"
+echo "  sdk list java"
+echo "  sdk install java <version>"
+echo "  sdk use java <version>"
 echo "========================================"

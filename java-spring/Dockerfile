@@ -24,18 +24,21 @@ WORKDIR /home/coder
 # Install SDKMAN
 RUN curl -s "https://get.sdkman.io" | bash
 
-# Initialize SDKMAN and install Java 21 and Maven
-RUN bash -c "source $HOME/.sdkman/bin/sdkman-init.sh && \
-    sdk install java 21.0.1-tem && \
-    sdk install maven 3.9.5"
+# Install Java 21 and Maven using SDKMAN
+# We need to use a single RUN command with proper shell sourcing
+RUN bash -c '. $HOME/.sdkman/bin/sdkman-init.sh && \
+    sdk install java 21.0.1-tem --yes && \
+    sdk install maven 3.9.5 --yes && \
+    sdk default java 21.0.1-tem && \
+    sdk default maven 3.9.5'
 
-# Set default versions
-ENV PATH="$HOME/.sdkman/candidates/java/current/bin:$HOME/.sdkman/candidates/maven/current/bin:$PATH"
+# Verify installations
+RUN bash -c '. $HOME/.sdkman/bin/sdkman-init.sh && \
+    java -version && \
+    mvn -version'
 
-# Create startup script that sources SDKMAN
-RUN echo '#!/bin/bash' > /tmp/init-sdkman.sh && \
-    echo 'source $HOME/.sdkman/bin/sdkman-init.sh' >> /tmp/init-sdkman.sh && \
-    chmod +x /tmp/init-sdkman.sh
+# Set environment for interactive shells
+ENV PATH="/home/coder/.sdkman/candidates/java/current/bin:/home/coder/.sdkman/candidates/maven/current/bin:$PATH"
 
 WORKDIR /home/coder
 
