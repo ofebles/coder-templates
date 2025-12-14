@@ -19,6 +19,24 @@ variable "docker_socket" {
   type        = string
 }
 
+variable "git_repo_url" {
+  default     = ""
+  description = "(Optional) Git repository URL to clone into workspace"
+  type        = string
+}
+
+variable "git_clone_depth" {
+  default     = 0
+  description = "Depth of clone for git-clone module (0 for full clone)"
+  type        = number
+}
+
+variable "git_clone_single_branch" {
+  default     = false
+  description = "Clone only the specified branch"
+  type        = bool
+}
+
 provider "docker" {
   host = var.docker_socket != "" ? var.docker_socket : null
 }
@@ -72,6 +90,38 @@ module "code-server" {
 
   agent_id = coder_agent.main.id
   order    = 1
+}
+
+# Git clone module - clone a repository if URL is provided
+module "git-clone" {
+  count  = var.git_repo_url != "" ? data.coder_workspace.me.start_count : 0
+  source = "registry.coder.com/coder/git-clone/coder"
+  version = "~> 1.0"
+
+  agent_id       = coder_agent.main.id
+  folder         = "/home/coder/project"
+  repo           = var.git_repo_url
+  depth          = var.git_clone_depth
+  single_branch  = var.git_clone_single_branch
+}
+
+# OpenCode CLI module
+module "opencode" {
+  count  = data.coder_workspace.me.start_count
+  source = "registry.coder.com/coder/opencode-cli/coder"
+  version = "~> 1.0"
+
+  agent_id = coder_agent.main.id
+}
+
+# JetBrains Fleet module
+module "fleet" {
+  count      = data.coder_workspace.me.start_count
+  source     = "registry.coder.com/coder/jetbrains-fleet/coder"
+  version    = "~> 1.0"
+  agent_id   = coder_agent.main.id
+  agent_name = "main"
+  folder     = "/home/coder/project"
 }
 
 
