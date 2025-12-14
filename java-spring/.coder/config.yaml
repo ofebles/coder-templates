@@ -1,0 +1,82 @@
+# Coder Workspace Configuration for Java Spring Development
+
+workspace:
+  name: "Java Spring Development"
+  description: "Complete development environment for Spring Boot applications with VSCode and JetBrains Fleet"
+  icon: "/icon/java.svg"
+  
+  tags:
+    - java
+    - spring-boot
+    - maven
+    - docker
+    - postgresql
+
+  # Resource requirements
+  resources:
+    cpu: "4"
+    memory: "4Gi"
+    disk: "50Gi"
+
+  # IDE configurations
+  ides:
+    - name: vscode
+      display_name: "VS Code"
+      port: 8443
+      url_path: "/"
+      
+    - name: fleet
+      display_name: "JetBrains Fleet"
+      port: 5000
+      url_path: "/"
+
+  # Application port mappings
+  applications:
+    - name: spring-boot
+      display_name: "Spring Boot Application"
+      port: 8080
+      url_path: "/api"
+      
+    - name: database
+      display_name: "PostgreSQL"
+      port: 5432
+      
+    - name: cache
+      display_name: "Redis Cache"
+      port: 6379
+
+  # Features
+  features:
+    - docker-in-docker: true
+    - ssh-access: true
+    - persistent-storage: true
+    - git-integration: true
+    - opencode-cli: true
+
+  # Startup configuration
+  startup:
+    - command: "code-server --config /home/coder/.config/code-server/config.yaml"
+      timeout: 30
+    - command: "~/.local/bin/fleet"
+      timeout: 60
+
+  # Environment variables
+  environment:
+    JAVA_HOME: "/usr/lib/jvm/java-21-openjdk-amd64"
+    MAVEN_HOME: "/usr/share/maven"
+    MAVEN_OPTS: "-Xmx2048m"
+    SPRING_PROFILES_ACTIVE: "dev"
+    POSTGRES_HOST: "postgres"
+    POSTGRES_PORT: "5432"
+    POSTGRES_DB: "springdb"
+    POSTGRES_USER: "coder"
+
+  # Persistent volumes
+  volumes:
+    - mount_path: "/home/coder/project"
+      size: "50Gi"
+      description: "Project workspace"
+      
+    - mount_path: "/var/lib/postgresql/data"
+      size: "10Gi"
+      description: "PostgreSQL data"
