@@ -98,20 +98,8 @@ module "git-clone" {
   source = "registry.coder.com/coder/git-clone/coder"
   version = "~> 1.0"
 
-  agent_id       = coder_agent.main.id
-  folder         = "/home/coder/project"
-  repo           = var.git_repo_url
-  depth          = var.git_clone_depth
-  single_branch  = var.git_clone_single_branch
-}
-
-# OpenCode CLI module
-module "opencode" {
-  count  = data.coder_workspace.me.start_count
-  source = "registry.coder.com/coder/opencode-cli/coder"
-  version = "~> 1.0"
-
   agent_id = coder_agent.main.id
+  url      = var.git_repo_url
 }
 
 # JetBrains Fleet module
