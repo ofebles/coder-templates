@@ -36,34 +36,18 @@ resource "docker_image" "main" {
 
 # Create Docker container
 resource "docker_container" "workspace" {
-  image    = docker_image.main.image_id
-  name     = "coder-${data.coder_workspace.me.id}"
-  hostname = data.coder_workspace.me.name
-  must_run = true
+  image      = docker_image.main.image_id
+  name       = "coder-${data.coder_workspace.me.id}"
+  hostname   = data.coder_workspace.me.name
+  must_run   = true
 
-  command = ["/bin/bash"]
+  command = ["/bin/bash", "-c", "while sleep 1000; do :; done"]
   stdin_open = true
   tty = true
 
   env = [
     "CODER_AGENT_TOKEN=${coder_agent.main.token}",
   ]
-
-  # Expose ports dynamically (0 = auto-assign)
-  ports {
-    internal = 8080
-    external = 0
-  }
-
-  ports {
-    internal = 8443
-    external = 0
-  }
-
-  ports {
-    internal = 5000
-    external = 0
-  }
 
   # Volumes
   volumes {
@@ -85,6 +69,8 @@ resource "coder_agent" "main" {
   arch           = var.docker_arch
   os             = "linux"
   startup_script = base64encode(file("${path.module}/startup.sh"))
+  
+  connection_timeout = 300
 }
 
 # VS Code Server
