@@ -1,23 +1,14 @@
 #!/bin/bash
 
-set -e
-
 echo "Starting Java Spring Development Environment..."
+echo "User: $(whoami)"
+echo "Working directory: $(pwd)"
 
-# Update system packages
-apt-get update
-apt-get install -y --no-install-recommends \
-  openjdk-21-jdk-headless \
-  maven \
-  curl \
-  wget \
-  git \
-  build-essential \
-  ca-certificates
-
-# Create project directory
+# Create project directory if it doesn't exist
 mkdir -p /home/coder/project
 cd /home/coder/project
+
+echo "Project directory: $(pwd)"
 
 # Initialize default project structure if empty
 if [ ! -f pom.xml ]; then
@@ -113,15 +104,8 @@ EOFJAVA
 spring.application.name=springboot-app
 server.port=8080
 EOFPROPS
+
+  echo "Project structure created successfully"
 fi
 
-# Download Maven dependencies
-echo "Downloading Maven dependencies..."
-mvn dependency:resolve -q || true
-
-echo "Environment setup complete!"
-echo "Java version:"
-java -version
-echo ""
-echo "Maven version:"
-mvn -version
+echo "Startup script completed successfully"
