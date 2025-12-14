@@ -9,99 +9,149 @@ terraform {
   }
 }
 
-variable "docker_arch" {
-  description = "Architecture of the Docker image"
-  default     = "amd64"
+locals {
+  username = data.coder_workspace_owner.me.name
 }
 
-data "coder_workspace" "me" {}
+variable "docker_socket" {
+  default     = ""
+  description = "(Optional) Docker socket URI"
+  type        = string
+}
 
 provider "docker" {
-  host = "unix:///var/run/docker.sock"
+  host = var.docker_socket != "" ? var.docker_socket : null
 }
 
-provider "coder" {}
+data "coder_provisioner" "me" {}
+data "coder_workspace" "me" {}
+data "coder_workspace_owner" "me" {}
 
-# Build Docker image
+resource "coder_agent" "main" {
+  arch           = data.coder_provisioner.me.arch
+  os             = "linux"
+  startup_script = file("${path.module}/startup.sh")
+
+  env = {
+    GIT_AUTHOR_NAME     = coalesce(data.coder_workspace_owner.me.full_name, data.coder_workspace_owner.me.name)
+    GIT_AUTHOR_EMAIL    = "${data.coder_workspace_owner.me.email}"
+    GIT_COMMITTER_NAME  = coalesce(data.coder_workspace_owner.me.full_name, data.coder_workspace_owner.me.name)
+    GIT_COMMITTER_EMAIL = "${data.coder_workspace_owner.me.email}"
+  }
+
+  metadata {
+    display_name = "CPU Usage"
+    key          = "0_cpu_usage"
+    script       = "coder stat cpu"
+    interval     = 10
+    timeout      = 1
+  }
+
+  metadata {
+    display_name = "RAM Usage"
+    key          = "1_ram_usage"
+    script       = "coder stat mem"
+    interval     = 10
+    timeout      = 1
+  }
+
+  metadata {
+    display_name = "Home Disk"
+    key          = "3_home_disk"
+    script       = "coder stat disk --path $${HOME}"
+    interval     = 60
+    timeout      = 1
+  }
+}
+
+# VSCode via code-server module
+module "code-server" {
+  count  = data.coder_workspace.me.start_count
+  source = "registry.coder.com/coder/code-server/coder"
+  version = "~> 1.0"
+
+  agent_id = coder_agent.main.id
+  order    = 1
+}
+
+# JetBrains module
+module "jetbrains" {
+  count      = data.coder_workspace.me.start_count
+  source     = "registry.coder.com/coder/jetbrains/coder"
+  version    = "~> 1.1"
+  agent_id   = coder_agent.main.id
+  agent_name = "main"
+  folder     = "/home/coder/project"
+  tooltip    = "Install Coder Desktop to use this button"
+}
+
+resource "docker_volume" "home_volume" {
+  name = "coder-${data.coder_workspace.me.id}-home"
+  lifecycle {
+    ignore_changes = all
+  }
+  labels {
+    label = "coder.owner"
+    value = data.coder_workspace_owner.me.name
+  }
+  labels {
+    label = "coder.owner_id"
+    value = data.coder_workspace_owner.me.id
+  }
+  labels {
+    label = "coder.workspace_id"
+    value = data.coder_workspace.me.id
+  }
+  labels {
+    label = "coder.workspace_name_at_creation"
+    value = data.coder_workspace.me.name
+  }
+}
+
+resource "docker_container" "workspace" {
+  count = data.coder_workspace.me.start_count
+  image = docker_image.main.image_id
+  name  = "coder-${data.coder_workspace_owner.me.name}-${lower(data.coder_workspace.me.name)}"
+  hostname = data.coder_workspace.me.name
+  
+  # Use init_script instead of startup_script for proper agent initialization
+  entrypoint = ["sh", "-c", replace(coder_agent.main.init_script, "/localhost|127\\.0\\.0\\.1/", "host.docker.internal")]
+  env        = ["CODER_AGENT_TOKEN=${coder_agent.main.token}"]
+  
+  host {
+    host = "host.docker.internal"
+    ip   = "host-gateway"
+  }
+
+  volumes {
+    container_path = "/home/coder"
+    volume_name    = docker_volume.home_volume.name
+    read_only      = false
+  }
+
+  labels {
+    label = "coder.owner"
+    value = data.coder_workspace_owner.me.name
+  }
+  labels {
+    label = "coder.owner_id"
+    value = data.coder_workspace_owner.me.id
+  }
+  labels {
+    label = "coder.workspace_id"
+    value = data.coder_workspace.me.id
+  }
+  labels {
+    label = "coder.workspace_name"
+    value = data.coder_workspace.me.name
+  }
+}
+
 resource "docker_image" "main" {
-  name = "coder-java-spring-${data.coder_workspace.me.id}:latest"
-
+  name = "coder-java-spring-${data.coder_workspace_owner.me.name}:latest"
   build {
     context    = path.module
     dockerfile = "Dockerfile"
   }
-
   force_remove = true
-}
-
-# Create Docker container
-resource "docker_container" "workspace" {
-  image      = docker_image.main.image_id
-  name       = "coder-${data.coder_workspace.me.id}"
-  hostname   = data.coder_workspace.me.name
-  must_run   = true
-
-  command = ["/bin/bash", "-c", "while sleep 1000; do :; done"]
-  stdin_open = true
-  tty = true
-
-  env = [
-    "CODER_AGENT_TOKEN=${coder_agent.main.token}",
-  ]
-
-  # Volumes
-  volumes {
-    container_path = "/home/coder/project"
-    host_path      = "/tmp/coder-${data.coder_workspace.me.id}"
-    read_only      = false
-  }
-
-  # Docker socket for Docker-in-Docker
-  volumes {
-    host_path      = "/var/run/docker.sock"
-    container_path = "/var/run/docker.sock"
-    read_only      = false
-  }
-}
-
-# Coder agent
-resource "coder_agent" "main" {
-  arch           = var.docker_arch
-  os             = "linux"
-  startup_script = base64encode(file("${path.module}/startup.sh"))
-  
-  connection_timeout = 300
-}
-
-# VS Code Server
-resource "coder_app" "code_server" {
-  agent_id     = coder_agent.main.id
-  slug         = "code"
-  display_name = "VS Code"
-  icon         = "/icon/code.svg"
-  url          = "http://localhost:8443?folder=/home/coder/project"
-  subdomain    = false
-  share        = "owner"
-}
-
-# JetBrains Fleet
-resource "coder_app" "fleet" {
-  agent_id     = coder_agent.main.id
-  slug         = "fleet"
-  display_name = "JetBrains Fleet"
-  icon         = "/icon/jetbrains.svg"
-  url          = "http://localhost:5000"
-  subdomain    = false
-  share        = "owner"
-}
-
-# Spring Boot application
-resource "coder_app" "spring_boot" {
-  agent_id     = coder_agent.main.id
-  slug         = "spring"
-  display_name = "Spring Boot App"
-  icon         = "/icon/spring.svg"
-  url          = "http://localhost:8080"
-  subdomain    = false
-  share        = "owner"
 }
