@@ -42,6 +42,36 @@ RUN bash -c '. $HOME/.sdkman/bin/sdkman-init.sh && \
 # Set environment for interactive shells
 ENV PATH="/home/coder/.sdkman/candidates/java/current/bin:/home/coder/.sdkman/candidates/maven/current/bin:$PATH"
 
+# Create a script for installing VSCode extensions
+# These will be installed when code-server starts for the first time
+RUN mkdir -p /home/coder/.local/share/code-server/extensions && \
+    mkdir -p /home/coder/.config/code-server
+
+# Create extension install script that will run on startup
+RUN cat > /home/coder/install-vscode-extensions.sh <<'EOF'
+#!/bin/bash
+# Install VSCode extensions for Java/Spring development
+EXTENSIONS=(
+    "redhat.java"
+    "redhat.vscode-xml"
+    "vscjava.vscode-maven"
+    "vscjava.vscode-spring-boot"
+    "vscjava.vscode-lombok"
+    "ms-azuretools.vscode-docker"
+    "eamodio.gitlens"
+    "ms-vscode.extension-pack-java"
+)
+
+echo "Installing VSCode extensions..."
+for ext in "${EXTENSIONS[@]}"; do
+    echo "Installing $ext..."
+    code-server --install-extension "$ext" || true
+done
+echo "VSCode extensions installation complete!"
+EOF
+
+RUN chmod +x /home/coder/install-vscode-extensions.sh
+
 WORKDIR /home/coder
 
 CMD ["/bin/bash"]

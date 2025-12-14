@@ -3,6 +3,13 @@
 # Initialize SDKMAN for interactive shells
 source $HOME/.sdkman/bin/sdkman-init.sh
 
+# Install VSCode extensions on first startup
+if [ -f "$HOME/install-vscode-extensions.sh" ] && [ ! -f "$HOME/.vscode-extensions-installed" ]; then
+    echo "Installing VSCode extensions for Java/Spring development..."
+    bash "$HOME/install-vscode-extensions.sh"
+    touch "$HOME/.vscode-extensions-installed"
+fi
+
 echo "Starting Java Spring Development Environment..."
 echo "User: $(whoami)"
 echo "Home: $HOME"
