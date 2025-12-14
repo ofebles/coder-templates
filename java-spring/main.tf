@@ -151,7 +151,7 @@ resource "docker_image" "main" {
   name = "coder-java-spring-${data.coder_workspace_owner.me.name}:latest"
   build {
     context    = path.module
-    dockerfile = "Dockerfile"
+    dockerfile = "${path.module}/Dockerfile"
   }
   force_remove = true
 }
