@@ -117,7 +117,18 @@ module "opencode" {
   web_app_display_name = "OpenCode"
 }
 
-# JetBrains Fleet module
+# JetBrains module - includes IntelliJ IDEA and other IDEs
+module "jetbrains" {
+  count      = data.coder_workspace.me.start_count
+  source     = "registry.coder.com/coder/jetbrains/coder"
+  version    = "~> 1.1"
+  agent_id   = coder_agent.main.id
+  agent_name = "main"
+  folder     = "/home/coder/project"
+  order      = 3
+}
+
+# JetBrains Fleet module - lightweight alternative
 module "fleet" {
   count      = data.coder_workspace.me.start_count
   source     = "registry.coder.com/coder/jetbrains-fleet/coder"
@@ -125,7 +136,7 @@ module "fleet" {
   agent_id   = coder_agent.main.id
   agent_name = "main"
   folder     = "/home/coder/project"
-  order      = 3
+  order      = 4
 }
 
 
