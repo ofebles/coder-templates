@@ -1,16 +1,22 @@
-FROM codercom/enterprise-base:ubuntu
+FROM eclipse-temurin:21-jdk-jammy
 
-# Install Java 21 and Maven
+# Install Maven and other utilities
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    openjdk-21-jdk-headless \
     maven \
+    git \
+    curl \
     && rm -rf /var/lib/apt/lists/*
 
-# Set Java environment
-ENV JAVA_HOME=/usr/lib/jvm/java-21-openjdk-amd64
+# Create coder user and home
+RUN useradd -m -s /bin/bash coder && \
+    mkdir -p /home/coder/project && \
+    chown -R coder:coder /home/coder
+
+# Set environment
+ENV JAVA_HOME=/opt/java/openjdk
 ENV PATH=$JAVA_HOME/bin:$PATH
 
-# Create project directory
-RUN mkdir -p /home/coder/project && chown -R coder:coder /home/coder/project
-
 WORKDIR /home/coder
+USER coder
+
+CMD ["/bin/bash"]
