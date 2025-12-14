@@ -10,12 +10,15 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     zip \
     unzip \
     ca-certificates \
+    sudo \
     && rm -rf /var/lib/apt/lists/*
 
 # Create coder user
 RUN useradd -m -s /bin/bash coder && \
     mkdir -p /home/coder/project && \
-    chown -R coder:coder /home/coder
+    chown -R coder:coder /home/coder && \
+    echo "coder ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers.d/coder && \
+    chmod 440 /etc/sudoers.d/coder
 
 # Switch to coder user
 USER coder
