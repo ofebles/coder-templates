@@ -102,6 +102,21 @@ module "git-clone" {
   url      = var.git_repo_url
 }
 
+# OpenCode module - AI-powered development tool
+module "opencode" {
+  count  = data.coder_workspace.me.start_count
+  source = "registry.coder.com/coder-labs/opencode/coder"
+  version = "~> 1.0"
+
+  agent_id           = coder_agent.main.id
+  workdir            = "/home/coder/project"
+  order              = 2
+  report_tasks       = true
+  install_opencode   = true
+  opencode_version   = "latest"
+  web_app_display_name = "OpenCode"
+}
+
 # JetBrains Fleet module
 module "fleet" {
   count      = data.coder_workspace.me.start_count
@@ -110,6 +125,7 @@ module "fleet" {
   agent_id   = coder_agent.main.id
   agent_name = "main"
   folder     = "/home/coder/project"
+  order      = 3
 }
 
 
