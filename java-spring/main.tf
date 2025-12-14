@@ -110,7 +110,7 @@ resource "docker_volume" "home_volume" {
 
 resource "docker_container" "workspace" {
   count = data.coder_workspace.me.start_count
-  image = docker_image.main.image_id
+  image = "codercom/enterprise-base:ubuntu"
   name  = "coder-${data.coder_workspace_owner.me.name}-${lower(data.coder_workspace.me.name)}"
   hostname = data.coder_workspace.me.name
   
@@ -145,13 +145,4 @@ resource "docker_container" "workspace" {
     label = "coder.workspace_name"
     value = data.coder_workspace.me.name
   }
-}
-
-resource "docker_image" "main" {
-  name = "coder-java-spring-${data.coder_workspace_owner.me.name}:latest"
-  build {
-    context    = path.module
-    dockerfile = "${path.module}/Dockerfile"
-  }
-  force_remove = true
 }
