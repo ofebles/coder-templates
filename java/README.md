@@ -6,6 +6,7 @@ A complete, production-ready development environment for Java projects with flex
 
 - **Flexible Java Versions** - Choose Java 21, 17, or 11 LTS at workspace creation
 - **Flexible Maven Versions** - Choose Maven 3.9.5, 3.8.7, or 3.6.3
+- **Optional Databases** - Auto-configure PostgreSQL, MongoDB, and/or Redis via docker-compose
 - **Git Repository Cloning** - Automatically clone your project repo on startup
 - **Apache Maven** - Build automation and dependency management
 - **VS Code Server** - Web-based VS Code IDE with Java extensions
@@ -151,6 +152,47 @@ Specify which branch to checkout (default: `main`):
 develop
 feature/my-feature
 v1.2.3
+```
+
+### Databases (Optional)
+Pre-configure Docker services for your project:
+- **None** - No databases (default)
+- **PostgreSQL Only** - PostgreSQL 16 on port 5432
+- **MongoDB Only** - MongoDB 7 on port 27017
+- **Redis Only** - Redis 7 on port 6379
+- **PostgreSQL + MongoDB**
+- **PostgreSQL + Redis**
+- **MongoDB + Redis**
+- **All** - PostgreSQL, MongoDB, and Redis together
+
+When you select databases, a `docker-compose.yml` file is automatically generated. Start services with:
+```bash
+docker-compose up -d
+```
+
+**Database Connection Details:**
+
+PostgreSQL:
+```
+Host: localhost
+Port: 5432
+User: postgres
+Password: postgres
+Database: appdb
+```
+
+MongoDB:
+```
+Host: localhost
+Port: 27017
+User: root
+Password: password
+```
+
+Redis:
+```
+Host: localhost
+Port: 6379
 ```
 
 ---

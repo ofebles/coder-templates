@@ -6,6 +6,7 @@ A complete, production-ready development environment for backend applications wi
 
 - **Flexible Node.js Versions** - Choose Node.js 20 LTS, 18 LTS, or 21 at workspace creation
 - **Multiple Package Managers** - npm, yarn, or pnpm
+- **Optional Databases** - Auto-configure PostgreSQL, MongoDB, and/or Redis via docker-compose
 - **Git Repository Cloning** - Automatically clone your backend project
 - **Express.js Template** - Fast, unopinionated backend framework
 - **API Debugging** - REST Client and Thunder Client extensions
@@ -52,6 +53,47 @@ npm run dev
 - **npm** (Default)
 - **yarn**
 - **pnpm**
+
+### Databases (Optional)
+Pre-configure Docker services for your project:
+- **None** - No databases (default)
+- **PostgreSQL Only** - PostgreSQL 16 on port 5432
+- **MongoDB Only** - MongoDB 7 on port 27017
+- **Redis Only** - Redis 7 on port 6379
+- **PostgreSQL + MongoDB**
+- **PostgreSQL + Redis**
+- **MongoDB + Redis**
+- **All** - PostgreSQL, MongoDB, and Redis together
+
+When you select databases, a `docker-compose.yml` file is automatically generated. Start services with:
+```bash
+docker-compose up -d
+```
+
+**Database Connection Details:**
+
+PostgreSQL:
+```
+Host: localhost
+Port: 5432
+User: postgres
+Password: postgres
+Database: appdb
+```
+
+MongoDB:
+```
+Host: localhost
+Port: 27017
+User: root
+Password: password
+```
+
+Redis:
+```
+Host: localhost
+Port: 6379
+```
 
 ### Git Repository & Branch
 Clone your repo automatically on startup.

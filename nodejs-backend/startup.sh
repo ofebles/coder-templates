@@ -85,6 +85,111 @@ else
     cd $HOME/project
 fi
 
+# ============================================================================
+# Handle database configurations
+# ============================================================================
+
+DATABASES="${DATABASES:-none}"
+
+if [ "$DATABASES" != "none" ]; then
+    echo ""
+    echo "Configuring databases..."
+    mkdir -p $HOME/project/.docker
+    
+    # Create docker-compose.yml for selected databases
+    cat > $HOME/project/docker-compose.yml <<'EOFDOCKER'
+version: '3.8'
+
+services:
+EOFDOCKER
+
+    # Add PostgreSQL if selected
+    if echo "$DATABASES" | grep -q "postgresql"; then
+        cat >> $HOME/project/docker-compose.yml <<'EOFPOSTGRES'
+  postgres:
+    image: postgres:16-alpine
+    container_name: nodejs_postgres
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: appdb
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+EOFPOSTGRES
+        echo "    ✓ PostgreSQL configured on port 5432"
+    fi
+
+    # Add MongoDB if selected
+    if echo "$DATABASES" | grep -q "mongodb"; then
+        cat >> $HOME/project/docker-compose.yml <<'EOFMONGO'
+  mongodb:
+    image: mongo:7-alpine
+    container_name: nodejs_mongodb
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: password
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongodb_data:/data/db
+    healthcheck:
+      test: echo 'db.runCommand("ping").ok' | mongosh localhost:27017/test --quiet
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+EOFMONGO
+        echo "    ✓ MongoDB configured on port 27017"
+    fi
+
+    # Add Redis if selected
+    if echo "$DATABASES" | grep -q "redis"; then
+        cat >> $HOME/project/docker-compose.yml <<'EOFREDIS'
+  redis:
+    image: redis:7-alpine
+    container_name: nodejs_redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+EOFREDIS
+        echo "    ✓ Redis configured on port 6379"
+    fi
+
+    # Add volumes section
+    cat >> $HOME/project/docker-compose.yml <<'EOFVOLUMES'
+volumes:
+EOFVOLUMES
+
+    if echo "$DATABASES" | grep -q "postgresql"; then
+        echo "  postgres_data:" >> $HOME/project/docker-compose.yml
+    fi
+
+    if echo "$DATABASES" | grep -q "mongodb"; then
+        echo "  mongodb_data:" >> $HOME/project/docker-compose.yml
+    fi
+
+    if echo "$DATABASES" | grep -q "redis"; then
+        echo "  redis_data:" >> $HOME/project/docker-compose.yml
+    fi
+
+    echo "✓ docker-compose.yml created with selected databases"
+fi
+
 # Initialize default project structure if empty
 if [ ! -f "package.json" ]; then
   echo "Creating default Express backend project structure..."

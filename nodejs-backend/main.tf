@@ -80,6 +80,54 @@ data "coder_parameter" "git_branch" {
   default     = "main"
 }
 
+data "coder_parameter" "databases" {
+  name        = "Databases (Optional)"
+  type        = "string"
+  description = "Select databases to pre-configure (comma-separated: postgresql, mongodb, redis)"
+  mutable     = false
+  default     = "none"
+
+  option {
+    name  = "None"
+    value = "none"
+  }
+
+  option {
+    name  = "PostgreSQL Only"
+    value = "postgresql"
+  }
+
+  option {
+    name  = "MongoDB Only"
+    value = "mongodb"
+  }
+
+  option {
+    name  = "Redis Only"
+    value = "redis"
+  }
+
+  option {
+    name  = "PostgreSQL + MongoDB"
+    value = "postgresql,mongodb"
+  }
+
+  option {
+    name  = "PostgreSQL + Redis"
+    value = "postgresql,redis"
+  }
+
+  option {
+    name  = "MongoDB + Redis"
+    value = "mongodb,redis"
+  }
+
+  option {
+    name  = "All (PostgreSQL + MongoDB + Redis)"
+    value = "postgresql,mongodb,redis"
+  }
+}
+
 provider "docker" {
   host = var.docker_socket != "" ? var.docker_socket : null
 }
@@ -103,6 +151,7 @@ resource "coder_agent" "main" {
     PACKAGE_MANAGER      = data.coder_parameter.package_manager.value
     GIT_REPO_URL         = data.coder_parameter.git_repo_url.value
     GIT_BRANCH           = data.coder_parameter.git_branch.value
+    DATABASES            = data.coder_parameter.databases.value
   }
 
   metadata {
