@@ -27,7 +27,7 @@ resource "docker_image" "main" {
   name = "coder-java-spring-${data.coder_workspace.me.id}:latest"
 
   build {
-    context    = "${path.module}"
+    context    = path.module
     dockerfile = "Dockerfile"
   }
 
@@ -36,42 +36,39 @@ resource "docker_image" "main" {
 
 # Create Docker container
 resource "docker_container" "workspace" {
-  image      = docker_image.main.image_id
-  name       = "coder-${data.coder_workspace.me.id}"
-  hostname   = data.coder_workspace.me.name
-  must_run   = true
-  start      = true
+  image    = docker_image.main.image_id
+  name     = "coder-${data.coder_workspace.me.id}"
+  hostname = data.coder_workspace.me.name
+  must_run = true
 
-  command = [
-    "/bin/bash",
-    "-c",
-    base64decode(coder_agent.main.startup_script)
-  ]
+  command = ["/bin/bash"]
+  stdin_open = true
+  tty = true
 
   env = [
     "CODER_AGENT_TOKEN=${coder_agent.main.token}",
   ]
 
-  # Expose ports
+  # Expose ports dynamically (0 = auto-assign)
   ports {
     internal = 8080
-    external = 8080
+    external = 0
   }
 
   ports {
     internal = 8443
-    external = 8443
+    external = 0
   }
 
   ports {
     internal = 5000
-    external = 5000
+    external = 0
   }
 
   # Volumes
   volumes {
     container_path = "/home/coder/project"
-    host_path      = "/tmp/coder-${data.coder_workspace.me.id}/project"
+    host_path      = "/tmp/coder-${data.coder_workspace.me.id}"
     read_only      = false
   }
 
@@ -81,14 +78,6 @@ resource "docker_container" "workspace" {
     container_path = "/var/run/docker.sock"
     read_only      = false
   }
-
-  healthcheck {
-    test         = ["CMD", "curl", "-f", "http://localhost:8080/health"]
-    interval     = "5s"
-    timeout      = "1s"
-    start_period = "10s"
-    retries      = 3
-  }
 }
 
 # Coder agent
@@ -96,8 +85,6 @@ resource "coder_agent" "main" {
   arch           = var.docker_arch
   os             = "linux"
   startup_script = base64encode(file("${path.module}/startup.sh"))
-  
-  connection_timeout = 10
 }
 
 # VS Code Server
