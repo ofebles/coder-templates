@@ -14,11 +14,6 @@ variable "docker_arch" {
   default     = "amd64"
 }
 
-variable "docker_image" {
-  description = "Docker image to use for workspace"
-  default     = "ubuntu:22.04"
-}
-
 data "coder_workspace" "me" {}
 
 provider "docker" {
@@ -27,16 +22,13 @@ provider "docker" {
 
 provider "coder" {}
 
-# Build or use Docker image
+# Build Docker image
 resource "docker_image" "main" {
-  name = "coder-java-spring-${data.coder_workspace.me.owner}-${data.coder_workspace.me.name}:latest"
+  name = "coder-java-spring-${data.coder_workspace.me.id}:latest"
 
   build {
-    context    = "${path.module}/.."
+    context    = "${path.module}"
     dockerfile = "Dockerfile"
-    tag = [
-      "coder-java-spring-${data.coder_workspace.me.owner}-${data.coder_workspace.me.name}:latest"
-    ]
   }
 
   force_remove = true
@@ -45,13 +37,11 @@ resource "docker_image" "main" {
 # Create Docker container
 resource "docker_container" "workspace" {
   image      = docker_image.main.image_id
-  name       = "coder-${data.coder_workspace.me.owner}-${data.coder_workspace.me.name}"
+  name       = "coder-${data.coder_workspace.me.id}"
   hostname   = data.coder_workspace.me.name
   must_run   = true
   start      = true
-  privileged = false
 
-  # Use the startup script
   command = [
     "/bin/bash",
     "-c",
@@ -60,10 +50,9 @@ resource "docker_container" "workspace" {
 
   env = [
     "CODER_AGENT_TOKEN=${coder_agent.main.token}",
-    "CODER_AGENT_URL=${coder_agent.main.url}",
   ]
 
-  # Expose ports for IDEs and applications
+  # Expose ports
   ports {
     internal = 8080
     external = 8080
@@ -79,7 +68,7 @@ resource "docker_container" "workspace" {
     external = 5000
   }
 
-  # Volume for workspace data
+  # Volumes
   volumes {
     container_path = "/home/coder/project"
     host_path      = "/tmp/coder-${data.coder_workspace.me.id}/project"
@@ -107,22 +96,11 @@ resource "coder_agent" "main" {
   arch           = var.docker_arch
   os             = "linux"
   startup_script = base64encode(file("${path.module}/startup.sh"))
-
-  metadata {
-    key   = "cpu"
-    value = "4 cores"
-  }
-  metadata {
-    key   = "memory"
-    value = "4 GB"
-  }
-  metadata {
-    key   = "disk"
-    value = "50 GB"
-  }
+  
+  connection_timeout = 10
 }
 
-# VS Code Server via code-server
+# VS Code Server
 resource "coder_app" "code_server" {
   agent_id     = coder_agent.main.id
   slug         = "code"
@@ -131,12 +109,6 @@ resource "coder_app" "code_server" {
   url          = "http://localhost:8443?folder=/home/coder/project"
   subdomain    = false
   share        = "owner"
-
-  healthcheck {
-    url       = "http://localhost:8443/healthz"
-    interval  = 5
-    threshold = 6
-  }
 }
 
 # JetBrains Fleet
@@ -148,12 +120,6 @@ resource "coder_app" "fleet" {
   url          = "http://localhost:5000"
   subdomain    = false
   share        = "owner"
-
-  healthcheck {
-    url       = "http://localhost:5000/health"
-    interval  = 10
-    threshold = 3
-  }
 }
 
 # Spring Boot application
@@ -165,10 +131,4 @@ resource "coder_app" "spring_boot" {
   url          = "http://localhost:8080"
   subdomain    = false
   share        = "owner"
-
-  healthcheck {
-    url       = "http://localhost:8080/health"
-    interval  = 10
-    threshold = 3
-  }
 }
