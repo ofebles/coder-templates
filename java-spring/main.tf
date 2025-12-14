@@ -74,16 +74,7 @@ module "code-server" {
   order    = 1
 }
 
-# JetBrains module
-module "jetbrains" {
-  count      = data.coder_workspace.me.start_count
-  source     = "registry.coder.com/coder/jetbrains/coder"
-  version    = "~> 1.1"
-  agent_id   = coder_agent.main.id
-  agent_name = "main"
-  folder     = "/home/coder/project"
-  tooltip    = "Install Coder Desktop to use this button"
-}
+
 
 resource "docker_volume" "home_volume" {
   name = "coder-${data.coder_workspace.me.id}-home"
