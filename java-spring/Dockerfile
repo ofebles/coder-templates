@@ -6,16 +6,11 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     maven \
     && rm -rf /var/lib/apt/lists/*
 
-# Set Java environment variables
+# Set Java environment
 ENV JAVA_HOME=/usr/lib/jvm/java-21-openjdk-amd64
-ENV MAVEN_HOME=/usr/share/maven
-ENV PATH=$JAVA_HOME/bin:$MAVEN_HOME/bin:$PATH
-ENV MAVEN_OPTS="-Xmx2048m"
+ENV PATH=$JAVA_HOME/bin:$PATH
 
 # Create project directory
-RUN mkdir -p /home/coder/project && \
-    chown -R coder:coder /home/coder/project
+RUN mkdir -p /home/coder/project && chown -R coder:coder /home/coder/project
 
 WORKDIR /home/coder
-
-CMD ["/bin/bash"]

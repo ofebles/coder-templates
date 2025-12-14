@@ -4,14 +4,6 @@ echo "Starting Java Spring Development Environment..."
 echo "User: $(whoami)"
 echo "Home: $HOME"
 
-# Install Java 21 and Maven
-echo "Installing Java 21 and Maven..."
-sudo apt-get update
-sudo apt-get install -y --no-install-recommends \
-  openjdk-21-jdk-headless \
-  maven \
-  git
-
 echo "Java version:"
 java -version
 
@@ -124,19 +116,20 @@ EOFPROPS
   echo "Project structure created successfully"
 fi
 
-echo "Downloading Maven dependencies..."
-mvn dependency:resolve -q 2>/dev/null || echo "Maven dependency resolution skipped"
+echo "Downloading Maven dependencies (this may take a while)..."
+mvn dependency:resolve -q 2>/dev/null || true
 
+echo ""
 echo "========================================"
-echo "Java Spring Development Environment Ready!"
+echo "✓ Java Spring Development Environment Ready!"
 echo "========================================"
 echo "Java: $(java -version 2>&1 | head -1)"
-echo "Maven: $(mvn -version 2>&1 | head -1)"
-echo "Project location: $HOME/project"
+echo "Maven: $(mvn -v 2>&1 | head -1)"
+echo "Project: ~/project"
 echo ""
-echo "Next steps:"
-echo "1. cd ~/project"
-echo "2. mvn spring-boot:run"
+echo "Quick start:"
+echo "  cd ~/project"
+echo "  mvn spring-boot:run"
 echo ""
-echo "Then access your app at: http://localhost:8080"
+echo "Then open: http://localhost:8080"
 echo "========================================"
