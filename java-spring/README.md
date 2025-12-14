@@ -1,187 +1,134 @@
 # Java Spring Boot Development Template for Coder
 
-A complete, production-ready development environment for Java Spring Boot applications with integrated IDE support and database services.
+A complete, production-ready development environment for Java Spring Boot applications with integrated IDE support, Docker-in-Docker, and developer tools.
 
 ## Features
 
 - **Java 21 LTS** - Latest long-term support version
 - **Apache Maven** - Build automation and dependency management
 - **Spring Boot 3.2** - Modern Spring framework
-- **VS Code Server** - Web-based VS Code IDE
+- **VS Code Server** - Web-based VS Code IDE with Java extensions
 - **JetBrains Fleet** - Lightweight JetBrains IDE
-- **PostgreSQL 16** - Production-grade database
-- **Redis 7** - In-memory data store
-- **Docker-in-Docker** - Run containers within the workspace
-- **OpenCode CLI** - Advanced development tools
-- **pgAdmin** - PostgreSQL management UI
+- **Docker-in-Docker** - Build and run containers within workspace
+- **Code Server Extensions** - Pre-installed Java, Spring Boot, Docker, and Git extensions
 
-## Quick Start
+## Getting Started
 
-### 1. Create a Workspace in Coder
+### 1. Create a Workspace from Template
 
-Using Terraform:
+In your Coder instance at https://coder.ofebles.dev/:
 
-```bash
-cd terraform
-terraform init
-terraform plan
-terraform apply
-```
+1. Click **Create Workspace**
+2. Select **Java Spring Boot** template
+3. Configure workspace settings (optional)
+4. Click **Create Workspace**
 
-Using Docker Compose (for local testing):
-
-```bash
-docker-compose up -d
-```
+The workspace will be provisioned in 2-3 minutes.
 
 ### 2. Access Your Development Environment
 
-Once the workspace is running:
+Once running, you'll see three applications:
 
-- **VS Code**: http://localhost:8443
-- **JetBrains Fleet**: http://localhost:5000
-- **Spring Boot App**: http://localhost:8080
-- **PostgreSQL**: localhost:5432
-- **Redis**: localhost:6379
-- **pgAdmin**: http://localhost:5050
+- **VS Code** - Click to open VS Code Server
+- **JetBrains Fleet** - Click to open Fleet IDE  
+- **Spring Boot App** - Accessible at http://localhost:8080
 
-### 3. Build and Run Your Spring Boot Application
+### 3. Start Developing
 
 ```bash
-# Navigate to project
+# Navigate to your project
 cd ~/project
 
-# Build the project
+# Build with Maven
 mvn clean install
 
 # Run the application
 mvn spring-boot:run
 
-# Or run the JAR
+# Or run the JAR directly
 java -jar target/springboot-app-1.0.0.jar
 ```
 
 ## Project Structure
 
 ```
-java-spring/
-├── Dockerfile              # Docker image definition
-├── docker-compose.yml      # Multi-container orchestration
-├── README.md              # This file
-├── terraform/             # Coder workspace configuration
-│   └── main.tf           # Terraform configuration
-├── init-scripts/          # Startup scripts
-│   └── startup.sh        # Environment initialization
-└── .coder/               # Coder-specific configuration
-    └── config.yaml       # Workspace metadata
+workspace/
+├── Dockerfile              # Container image definition
+├── terraform/              # Coder workspace configuration
+│   └── main.tf            # Terraform configuration
+│   └── startup.sh         # Environment initialization script
+├── project/               # Your Spring Boot project
+│   ├── src/              
+│   ├── pom.xml           
+│   └── ...               
+└── README.md              # This file
 ```
 
 ## System Requirements
 
-### Minimum
-- 4 CPU cores
-- 4 GB RAM
-- 50 GB disk space
+- **CPU**: 2+ cores
+- **Memory**: 2+ GB (4GB recommended)
+- **Disk**: 20+ GB free
 
-### Recommended
-- 8 CPU cores
-- 8 GB RAM
-- 100 GB disk space
+## Pre-configured Tools
 
-## Environment Variables
-
-The workspace comes pre-configured with:
-
-```
-JAVA_HOME=/usr/lib/jvm/java-21-openjdk-amd64
-MAVEN_HOME=/usr/share/maven
-MAVEN_OPTS=-Xmx2048m
-SPRING_PROFILES_ACTIVE=dev
-POSTGRES_HOST=postgres
-POSTGRES_PORT=5432
-POSTGRES_DB=springdb
-POSTGRES_USER=coder
-POSTGRES_PASSWORD=coder
-```
-
-## Database Configuration
-
-### PostgreSQL
-
-Default connection string:
-```
-jdbc:postgresql://postgres:5432/springdb
-Username: coder
-Password: coder
-```
-
-Create additional databases:
+### Java & Maven
 
 ```bash
-docker exec java-spring-postgres psql -U coder -d springdb -c "CREATE DATABASE myapp;"
+# Check versions
+java -version
+mvn -version
+
+# Maven is configured with:
+# - MAVEN_OPTS: -Xmx2048m (2GB heap)
+# - Java version: 21
 ```
 
-### Redis
-
-Redis is available at `redis://redis:6379`
-
-```bash
-docker exec -it java-spring-redis redis-cli
-```
-
-## IDE Setup
-
-### VS Code
+### VS Code Extensions
 
 Pre-installed extensions:
-- **Java Extension Pack** - RedHat Java support
-- **Spring Boot Extension Pack**
-- **Maven for Java**
-- **Git Lens**
-- **Docker support**
 
-Install additional extensions from the marketplace.
+- **Red Hat Java** - Language Support for Java (OpenJDK)
+- **Extension Pack for Java** - Popular extensions for Java development
+- **Spring Boot Extension Pack** - Spring development support
+- **Maven for Java** - Maven project support
+- **Lombok Annotations** - Lombok support
+- **Docker** - Docker commands
+- **GitLens** - Git integration
 
-### JetBrains Fleet
+Install more from the VS Code marketplace as needed.
 
-JetBrains Fleet provides a lightweight, modern development experience with intelligent code completion and refactoring tools.
+### Docker-in-Docker
 
-Access at: http://localhost:5000
+You can build and run Docker containers from within your workspace:
 
-## Common Tasks
+```bash
+# Build a Docker image
+docker build -t my-app:latest .
 
-### Debug Spring Boot Application
-
-In VS Code, create `.vscode/launch.json`:
-
-```json
-{
-  "version": "0.2.0",
-  "configurations": [
-    {
-      "type": "java",
-      "name": "Spring Boot App",
-      "request": "launch",
-      "mainClass": "com.example.Application",
-      "projectName": "springboot-app",
-      "args": "",
-      "cwd": "${workspaceFolder}",
-      "console": "integratedTerminal",
-      "preLaunchTask": "maven: clean"
-    }
-  ]
-}
+# Run a container
+docker run -d my-app:latest
 ```
 
+## Common Development Tasks
+
 ### Create a New Spring Boot Project
+
+If you need a fresh project:
 
 ```bash
 cd ~/project
 mvn archetype:generate \
-  -DgroupId=com.example \
-  -DartifactId=my-app \
-  -DarchetypeArtifactId=maven-archetype-quickstart \
-  -DinteractiveMode=false
+  -DgroupId=com.mycompany \
+  -DartifactId=my-spring-app \
+  -DarchetypeArtifactId=maven-archetype-quickstart
+```
+
+### Build and Run
+
+```bash
+mvn clean install
+mvn spring-boot:run
 ```
 
 ### Run Tests
@@ -190,119 +137,169 @@ mvn archetype:generate \
 mvn test
 ```
 
-### Build Docker Image for Your App
+### Create Executable JAR
 
 ```bash
-# In your project directory
+mvn clean package
+java -jar target/springboot-app-1.0.0.jar
+```
+
+### Build Docker Image
+
+```bash
+# Using Spring Boot maven plugin
 mvn spring-boot:build-image
+
+# Or create your own Dockerfile
+docker build -t my-spring-app:1.0.0 .
 ```
 
-### Push to Registry
+### Debug Application
 
-```bash
-docker tag springboot-app:1.0.0 your-registry/springboot-app:1.0.0
-docker push your-registry/springboot-app:1.0.0
-```
+In **VS Code**:
+
+1. Open Run and Debug (Ctrl+Shift+D)
+2. Click "Create a launch.json file"
+3. Select "Java" configuration
+4. Start debugging
+
+In **JetBrains Fleet**:
+
+1. Set breakpoints in your code
+2. Right-click main class → Debug
+3. Use debugger controls
+
+## Workspace Persistence
+
+Your project files in `/home/coder/project` are persisted across workspace rebuilds using a Docker volume. Your work is safe!
+
+## Terminal Access
+
+Use the integrated terminal in VS Code or Fleet to run commands:
+
+- Maven builds
+- Git operations
+- Custom scripts
+- Docker commands
 
 ## Troubleshooting
 
+### Application Won't Start
+
+Check logs in the terminal:
+
+```bash
+cd ~/project
+mvn spring-boot:run
+```
+
+Look for error messages and check your code.
+
+### Out of Memory
+
+The container has 4GB allocated. If you need more:
+
+1. Edit workspace settings in Coder
+2. Increase memory allocation
+3. Restart workspace
+
+### Maven Dependencies Won't Download
+
+Clear Maven cache:
+
+```bash
+rm -rf ~/.m2/repository
+mvn clean install -U
+```
+
 ### Port Already in Use
 
-If ports are already bound, modify `docker-compose.yml`:
+Change Spring Boot port in `application.properties`:
 
-```yaml
-ports:
-  - "8081:8080"  # Change host port
-  - "8444:8443"  # Change VSCode port
-  - "5001:5000"  # Change Fleet port
+```properties
+server.port=8081
 ```
 
-### Insufficient Disk Space
-
-Increase the volume size in `docker-compose.yml`:
-
-```yaml
-volumes:
-  postgres_data:
-    driver_opts:
-      type: tmpfs
-      size: 20Gi
-```
-
-### PostgreSQL Connection Failed
-
-Check PostgreSQL is running:
-
-```bash
-docker-compose ps postgres
-docker-compose logs postgres
-```
-
-Verify connection:
-
-```bash
-docker exec java-spring-postgres psql -U coder -d springdb -c "SELECT 1"
-```
-
-### Memory Issues
-
-Increase heap size:
-
-```bash
-export MAVEN_OPTS="-Xmx4096m"
-export _JAVA_OPTIONS="-Xmx4096m"
-```
+Then access at http://localhost:8081
 
 ## Performance Tips
 
-1. **Use Maven offline mode** after first build:
-   ```bash
-   mvn clean install -o
-   ```
+1. **Use Code Server** - Lighter than full IDE
+2. **Enable incremental compilation** in Maven
+3. **Use Spring Boot DevTools** for faster reload
+4. **Keep dependencies minimal**
 
-2. **Enable Maven parallel builds**:
-   ```bash
-   mvn -T 1C install
-   ```
+## Spring Boot with External Database
 
-3. **Use Spring Boot devtools** for faster development:
-   ```xml
-   <dependency>
-       <groupId>org.springframework.boot</groupId>
-       <artifactId>spring-boot-devtools</artifactId>
-       <scope>runtime</scope>
-       <optional>true</optional>
-   </dependency>
-   ```
+To use an external PostgreSQL database:
 
-4. **Limit Docker resource usage** in `docker-compose.yml`:
-   ```yaml
-   deploy:
-     resources:
-       limits:
-         cpus: '4'
-         memory: 4G
-   ```
+1. Update `application.properties`:
 
-## Support and Documentation
+```properties
+spring.datasource.url=jdbc:postgresql://your-db-host:5432/dbname
+spring.datasource.username=user
+spring.datasource.password=pass
+spring.jpa.hibernate.ddl-auto=update
+```
+
+2. Add PostgreSQL driver dependency in `pom.xml`:
+
+```xml
+<dependency>
+    <groupId>org.postgresql</groupId>
+    <artifactId>postgresql</artifactId>
+    <scope>runtime</scope>
+</dependency>
+```
+
+## Git Integration
+
+Initialize or clone a repository:
+
+```bash
+# Initialize new repo
+cd ~/project
+git init
+git config user.name "Your Name"
+git config user.email "your@email.com"
+git add .
+git commit -m "Initial commit"
+
+# Or clone existing
+cd ~
+git clone https://github.com/yourrepo/your-project.git
+cd your-project
+```
+
+GitLens extension provides visualization of commits and blame.
+
+## Support & Documentation
 
 - [Spring Boot Documentation](https://spring.io/projects/spring-boot)
 - [Maven Documentation](https://maven.apache.org/guides/)
 - [Coder Documentation](https://coder.com/docs)
-- [VS Code Documentation](https://code.visualstudio.com/docs)
-- [JetBrains Fleet Documentation](https://www.jetbrains.com/help/fleet/)
-- [PostgreSQL Documentation](https://www.postgresql.org/docs/)
+- [VS Code Java Guide](https://code.visualstudio.com/docs/languages/java)
+- [JetBrains Fleet Help](https://www.jetbrains.com/help/fleet/)
 
-## License
+## Template Information
 
-This template is provided as-is for use with Coder.
+- **Base Image**: Ubuntu 22.04
+- **Java Version**: 21 LTS
+- **Maven Version**: Latest from Ubuntu repos
+- **Code Server**: Latest
+- **Memory**: 4GB default
+- **Disk**: 50GB default
 
-## Contributing
+## Tips & Tricks
 
-Feel free to fork and customize this template for your specific needs.
+- Use **Cmd/Ctrl + Shift + P** in VS Code to access command palette
+- Use **Cmd/Ctrl + `** to toggle integrated terminal
+- Enable dark mode in Code Server settings
+- Customize extensions for your workflow
+- Use Maven profiles for different environments
 
 ---
 
-**Happy Coding!** 🚀
+**Happy coding!** 🚀
 
-For more information about Coder templates, visit: https://coder.com/docs/templates
+For issues or questions about this template, visit: https://github.com/ofebles/coder-templates

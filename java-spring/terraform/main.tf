@@ -14,6 +14,11 @@ variable "docker_arch" {
   default     = "amd64"
 }
 
+variable "docker_image" {
+  description = "Docker image to use for workspace"
+  default     = "ubuntu:22.04"
+}
+
 data "coder_workspace" "me" {}
 
 provider "docker" {
@@ -22,36 +27,62 @@ provider "docker" {
 
 provider "coder" {}
 
-data "docker_registry_image" "base" {
-  name = "ubuntu:22.04"
-}
+# Build or use Docker image
+resource "docker_image" "main" {
+  name = "coder-java-spring-${data.coder_workspace.me.owner}-${data.coder_workspace.me.name}:latest"
 
-resource "docker_image" "java_spring" {
-  name          = "java-spring-workspace:latest"
   build {
-    context    = path.module
+    context    = "${path.module}/.."
     dockerfile = "Dockerfile"
+    tag = [
+      "coder-java-spring-${data.coder_workspace.me.owner}-${data.coder_workspace.me.name}:latest"
+    ]
   }
+
+  force_remove = true
 }
 
+# Create Docker container
 resource "docker_container" "workspace" {
-  image = docker_image.java_spring.image_id
-  name  = "coder-${data.coder_workspace.me.id}"
+  image      = docker_image.main.image_id
+  name       = "coder-${data.coder_workspace.me.owner}-${data.coder_workspace.me.name}"
+  hostname   = data.coder_workspace.me.name
+  must_run   = true
+  start      = true
+  privileged = false
 
-  # CPU and memory limits
-  cpu_shares = 2048
-  memory     = 4096
-
-  # Environment variables
-  env = [
-    "CODER_AGENT_TOKEN=${coder_agent.workspace.token}",
-    "CODER_AGENT_URL=${coder_agent.workspace.url}"
+  # Use the startup script
+  command = [
+    "/bin/bash",
+    "-c",
+    base64decode(coder_agent.main.startup_script)
   ]
 
-  # Volumes
+  env = [
+    "CODER_AGENT_TOKEN=${coder_agent.main.token}",
+    "CODER_AGENT_URL=${coder_agent.main.url}",
+  ]
+
+  # Expose ports for IDEs and applications
+  ports {
+    internal = 8080
+    external = 8080
+  }
+
+  ports {
+    internal = 8443
+    external = 8443
+  }
+
+  ports {
+    internal = 5000
+    external = 5000
+  }
+
+  # Volume for workspace data
   volumes {
     container_path = "/home/coder/project"
-    host_path      = "/home/coder/project"
+    host_path      = "/tmp/coder-${data.coder_workspace.me.id}/project"
     read_only      = false
   }
 
@@ -59,20 +90,22 @@ resource "docker_container" "workspace" {
   volumes {
     host_path      = "/var/run/docker.sock"
     container_path = "/var/run/docker.sock"
+    read_only      = false
   }
 
-  # Network
-  network_mode = "host"
-
-  # Keep container running
-  must_run = true
-  command  = ["/bin/bash", "-c", "while true; do sleep 1; done"]
+  healthcheck {
+    test         = ["CMD", "curl", "-f", "http://localhost:8080/health"]
+    interval     = "5s"
+    timeout      = "1s"
+    start_period = "10s"
+    retries      = 3
+  }
 }
 
-resource "coder_agent" "workspace" {
-  os             = "linux"
+# Coder agent
+resource "coder_agent" "main" {
   arch           = var.docker_arch
-  dir            = "/home/coder"
+  os             = "linux"
   startup_script = base64encode(file("${path.module}/startup.sh"))
 
   metadata {
@@ -89,10 +122,10 @@ resource "coder_agent" "workspace" {
   }
 }
 
-# VSCode Web configuration
-resource "coder_app" "vscode" {
-  agent_id     = coder_agent.workspace.id
-  slug         = "vscode"
+# VS Code Server via code-server
+resource "coder_app" "code_server" {
+  agent_id     = coder_agent.main.id
+  slug         = "code"
   display_name = "VS Code"
   icon         = "/icon/code.svg"
   url          = "http://localhost:8443?folder=/home/coder/project"
@@ -106,9 +139,9 @@ resource "coder_app" "vscode" {
   }
 }
 
-# JetBrains Fleet configuration
+# JetBrains Fleet
 resource "coder_app" "fleet" {
-  agent_id     = coder_agent.workspace.id
+  agent_id     = coder_agent.main.id
   slug         = "fleet"
   display_name = "JetBrains Fleet"
   icon         = "/icon/jetbrains.svg"
@@ -123,18 +156,19 @@ resource "coder_app" "fleet" {
   }
 }
 
-# SSH access configuration
-resource "coder_agent_instance" "dev" {
-  agent_id = coder_agent.workspace.id
-  instance_id = docker_container.workspace.id
+# Spring Boot application
+resource "coder_app" "spring_boot" {
+  agent_id     = coder_agent.main.id
+  slug         = "spring"
+  display_name = "Spring Boot App"
+  icon         = "/icon/spring.svg"
+  url          = "http://localhost:8080"
+  subdomain    = false
+  share        = "owner"
 
-  provisioner "remote-exec" {
-    inline = [
-      "until curl -fsSL http://localhost:8443/healthz > /dev/null; do sleep 2; done",
-    ]
+  healthcheck {
+    url       = "http://localhost:8080/health"
+    interval  = 10
+    threshold = 3
   }
-}
-
-output "workspace_url" {
-  value = data.coder_workspace.me.access_url
 }
