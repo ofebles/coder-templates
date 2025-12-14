@@ -3,6 +3,34 @@
 # Initialize SDKMAN for interactive shells
 source $HOME/.sdkman/bin/sdkman-init.sh
 
+# ============================================================================
+# Handle version parameters
+# ============================================================================
+
+# Get versions from environment (set by Terraform parameters)
+JAVA_VERSION="${JAVA_VERSION:-21.0.1-tem}"
+MAVEN_VERSION="${MAVEN_VERSION:-3.9.5}"
+
+echo "Setting up tools with user-selected versions..."
+echo "Java Version: $JAVA_VERSION"
+echo "Maven Version: $MAVEN_VERSION"
+
+# Install Java if not already installed
+if ! sdk list java | grep -q "$JAVA_VERSION"; then
+    echo "Installing Java $JAVA_VERSION..."
+    sdk install java "$JAVA_VERSION" --yes
+fi
+
+# Install Maven if not already installed
+if ! sdk list maven | grep -q "$MAVEN_VERSION"; then
+    echo "Installing Maven $MAVEN_VERSION..."
+    sdk install maven "$MAVEN_VERSION" --yes
+fi
+
+# Set defaults
+sdk default java "$JAVA_VERSION"
+sdk default maven "$MAVEN_VERSION"
+
 # Install VSCode extensions on first startup
 if [ -f "$HOME/install-vscode-extensions.sh" ] && [ ! -f "$HOME/.vscode-extensions-installed" ]; then
     echo "Installing VSCode extensions for Java/Spring development..."
@@ -20,10 +48,27 @@ echo "Java: $(java -version 2>&1 | head -1)"
 echo "Maven: $(mvn -v 2>&1 | head -1)"
 echo ""
 
-# Create project directory if it doesn't exist
-echo "Setting up project directory..."
-mkdir -p $HOME/project
-cd $HOME/project
+# ============================================================================
+# Handle Git repository cloning if provided
+# ============================================================================
+
+GIT_REPO_URL="${GIT_REPO_URL:-}"
+GIT_BRANCH="${GIT_BRANCH:-main}"
+
+if [ -n "$GIT_REPO_URL" ] && [ "$GIT_REPO_URL" != "" ]; then
+    echo "Cloning repository from: $GIT_REPO_URL"
+    cd $HOME
+    git clone --branch "$GIT_BRANCH" "$GIT_REPO_URL" project 2>/dev/null || git clone "$GIT_REPO_URL" project
+    cd $HOME/project
+    if [ -n "$GIT_BRANCH" ] && [ "$GIT_BRANCH" != "main" ]; then
+        git checkout "$GIT_BRANCH" 2>/dev/null || true
+    fi
+else
+    # Create project directory if it doesn't exist
+    echo "Setting up project directory..."
+    mkdir -p $HOME/project
+    cd $HOME/project
+fi
 
 # Initialize default project structure if empty
 if [ ! -f pom.xml ]; then

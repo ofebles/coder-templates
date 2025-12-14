@@ -4,7 +4,9 @@ A complete, production-ready development environment for Java Spring Boot applic
 
 ## Features
 
-- **Java 21 LTS** - Latest long-term support version
+- **Flexible Java Versions** - Choose Java 21, 17, or 11 LTS at workspace creation
+- **Flexible Maven Versions** - Choose Maven 3.9.5, 3.8.7, or 3.6.3
+- **Git Repository Cloning** - Automatically clone your project repo on startup
 - **Apache Maven** - Build automation and dependency management
 - **Spring Boot 3.2** - Modern Spring framework
 - **VS Code Server** - Web-based VS Code IDE with Java extensions
@@ -20,10 +22,27 @@ In your Coder instance at https://coder.ofebles.dev/:
 
 1. Click **Create Workspace**
 2. Select **Java Spring Boot** template
-3. Configure workspace settings (optional)
+3. **Configure parameters** (optional):
+   - **Java Version**: Select 21 (default), 17, or 11 LTS
+   - **Maven Version**: Select 3.9.5 (default), 3.8.7, or 3.6.3
+   - **Git Repository (Optional)**: Paste URL of repo to clone (e.g., `https://github.com/user/repo.git`)
+   - **Git Branch (Optional)**: Specify branch (default: `main`)
 4. Click **Create Workspace**
 
 The workspace will be provisioned in 2-3 minutes.
+
+### Customization Examples
+
+**Example 1: Java 17 + Maven 3.8.7**
+- Java Version: `Java 17 (LTS)`
+- Maven Version: `Maven 3.8.7`
+- Git Repository: (leave empty)
+
+**Example 2: Clone your existing project**
+- Java Version: `Java 21 (LTS - Recommended)`
+- Maven Version: `Maven 3.9.5 (Latest)`
+- Git Repository: `https://github.com/yourorg/your-project.git`
+- Git Branch: `develop` (if not main)
 
 ### 2. Access Your Development Environment
 
@@ -69,6 +88,42 @@ workspace/
 - **CPU**: 2+ cores
 - **Memory**: 2+ GB (4GB recommended)
 - **Disk**: 20+ GB free
+
+## Template Parameters
+
+When creating a workspace, you can customize:
+
+### Java Version
+- **Java 21 LTS** (Recommended - Latest)
+- **Java 17 LTS** (Stable)
+- **Java 11 LTS** (Legacy projects)
+
+Selected version is automatically installed and set as default.
+
+### Maven Version
+- **Maven 3.9.5** (Latest - Recommended)
+- **Maven 3.8.7** (Stable)
+- **Maven 3.6.3** (Legacy projects)
+
+Selected version is automatically installed and set as default.
+
+### Git Repository (Optional)
+Paste a Git repository URL to automatically clone it into your workspace:
+```
+https://github.com/yourorg/your-project.git
+```
+
+The repo will be cloned to `/home/coder/project` with full history.
+
+### Git Branch (Optional)
+Specify which branch to checkout (default: `main`):
+```
+develop
+feature/my-feature
+v1.2.3
+```
+
+---
 
 ## Pre-configured Tools
 
