@@ -1,14 +1,31 @@
 #!/bin/bash
 
+set -e
+
 echo "Starting Java Spring Development Environment..."
 echo "User: $(whoami)"
-echo "Working directory: $(pwd)"
+echo "Home: $HOME"
+
+# Install Java 21 and Maven
+echo "Installing Java 21 and Maven..."
+apt-get update
+apt-get install -y --no-install-recommends \
+  openjdk-21-jdk-headless \
+  maven \
+  git
+
+echo "Java version:"
+java -version
+
+echo "Maven version:"
+mvn -version
 
 # Create project directory if it doesn't exist
-mkdir -p /home/coder/project
-cd /home/coder/project
+echo "Setting up project directory..."
+mkdir -p $HOME/project
+cd $HOME/project
 
-echo "Project directory: $(pwd)"
+echo "Current directory: $(pwd)"
 
 # Initialize default project structure if empty
 if [ ! -f pom.xml ]; then
@@ -29,7 +46,7 @@ if [ ! -f pom.xml ]; then
     <version>1.0.0</version>
 
     <name>Spring Boot Application</name>
-    <description>Sample Spring Boot Application</description>
+    <description>Sample Spring Boot Application for Coder</description>
 
     <parent>
         <groupId>org.springframework.boot</groupId>
@@ -103,9 +120,25 @@ EOFJAVA
   cat > src/main/resources/application.properties <<'EOFPROPS'
 spring.application.name=springboot-app
 server.port=8080
+logging.level.root=INFO
 EOFPROPS
 
   echo "Project structure created successfully"
 fi
 
-echo "Startup script completed successfully"
+echo "Downloading Maven dependencies..."
+mvn dependency:resolve -q 2>/dev/null || echo "Maven dependency resolution skipped"
+
+echo "========================================"
+echo "Java Spring Development Environment Ready!"
+echo "========================================"
+echo "Java: $(java -version 2>&1 | head -1)"
+echo "Maven: $(mvn -version 2>&1 | head -1)"
+echo "Project location: $HOME/project"
+echo ""
+echo "Next steps:"
+echo "1. cd ~/project"
+echo "2. mvn spring-boot:run"
+echo ""
+echo "Then access your app at: http://localhost:8080"
+echo "========================================"
