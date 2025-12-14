@@ -1,15 +1,13 @@
 #!/bin/bash
 
-set -e
-
 echo "Starting Java Spring Development Environment..."
 echo "User: $(whoami)"
 echo "Home: $HOME"
 
 # Install Java 21 and Maven
 echo "Installing Java 21 and Maven..."
-apt-get update
-apt-get install -y --no-install-recommends \
+sudo apt-get update
+sudo apt-get install -y --no-install-recommends \
   openjdk-21-jdk-headless \
   maven \
   git
