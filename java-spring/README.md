@@ -86,17 +86,20 @@ mvn -version
 
 ### VS Code Extensions
 
-Pre-installed extensions:
+The following extensions are automatically installed on first workspace startup:
 
-- **Red Hat Java** - Language Support for Java (OpenJDK)
-- **Extension Pack for Java** - Popular extensions for Java development
-- **Spring Boot Extension Pack** - Spring development support
-- **Maven for Java** - Maven project support
-- **Lombok Annotations** - Lombok support
-- **Docker** - Docker commands
-- **GitLens** - Git integration
+- **Red Hat Java** (`redhat.java`) - Language Support for Java (OpenJDK)
+- **XML Support** (`redhat.vscode-xml`) - XML language support
+- **Extension Pack for Java** (`ms-vscode.extension-pack-java`) - Popular extensions for Java development
+- **Maven for Java** (`vscjava.vscode-maven`) - Maven project support
+- **Spring Boot Extension Pack** (`vscjava.vscode-spring-boot`) - Spring development support
+- **Lombok Annotations** (`vscjava.vscode-lombok`) - Lombok annotation support
+- **Docker** (`ms-azuretools.vscode-docker`) - Docker commands and integration
+- **GitLens** (`eamodio.gitlens`) - Advanced Git integration and visualization
 
-Install more from the VS Code marketplace as needed.
+**Note**: Extensions are installed automatically the first time code-server starts. If an extension fails to install, you can manually install it via the VS Code marketplace.
+
+Install additional extensions from the VS Code marketplace as needed for your workflow.
 
 ### Docker-in-Docker
 
