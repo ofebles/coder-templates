@@ -119,15 +119,13 @@ module "opencode" {
 
 # JetBrains module - includes IntelliJ IDEA and other IDEs
 module "jetbrains" {
-  count               = data.coder_workspace.me.start_count
-  source              = "registry.coder.com/coder/jetbrains/coder"
-  version             = "~> 1.0"
-  agent_id            = coder_agent.main.id
-  agent_name          = "main"
-  folder              = "/home/coder/project"
-  coder_app_order     = 3
-  coder_parameter_order = 10
-  default             = ["IU"] # Default to IntelliJ IDEA
+  count      = data.coder_workspace.me.start_count
+  source     = "registry.coder.com/coder/jetbrains/coder"
+  version    = "~> 1.1"
+  agent_id   = coder_agent.main.id
+  agent_name = "main"
+  folder     = "/home/coder/project"
+  tooltip    = "You need to [Install Coder Desktop](https://coder.com/docs/user-guides/desktop#install-coder-desktop) to use this button."
 }
 
 # JetBrains Fleet module - lightweight alternative
