@@ -242,7 +242,7 @@ resource "docker_volume" "home_volume" {
 }
 
 resource "docker_image" "main" {
-  name = "coder-java-spring-${data.coder_workspace_owner.me.id}:latest"
+  name = "coder-java-${data.coder_workspace_owner.me.id}:latest"
   build {
     context    = path.module
     dockerfile = "${path.module}/Dockerfile"

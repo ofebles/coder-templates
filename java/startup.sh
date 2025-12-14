@@ -38,7 +38,7 @@ if [ -f "$HOME/install-vscode-extensions.sh" ] && [ ! -f "$HOME/.vscode-extensio
     touch "$HOME/.vscode-extensions-installed"
 fi
 
-echo "Starting Java Spring Development Environment..."
+echo "Starting Java Development Environment..."
 echo "User: $(whoami)"
 echo "Home: $HOME"
 
@@ -72,7 +72,7 @@ fi
 
 # Initialize default project structure if empty
 if [ ! -f pom.xml ]; then
-  echo "Creating default Spring Boot project structure..."
+  echo "Creating default Java project structure..."
   
   mkdir -p src/main/java/com/example src/main/resources src/test/java/com/example
   
@@ -85,86 +85,110 @@ if [ ! -f pom.xml ]; then
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>com.example</groupId>
-    <artifactId>springboot-app</artifactId>
+    <artifactId>java-app</artifactId>
     <version>1.0.0</version>
+    <packaging>jar</packaging>
 
-    <name>Spring Boot Application</name>
-    <description>Sample Spring Boot Application for Coder</description>
-
-    <parent>
-        <groupId>org.springframework.boot</groupId>
-        <artifactId>spring-boot-starter-parent</artifactId>
-        <version>3.2.0</version>
-        <relativePath/>
-    </parent>
+    <name>Java Application</name>
+    <description>Java Application Template for Coder</description>
 
     <properties>
         <java.version>21</java.version>
         <maven.compiler.source>21</maven.compiler.source>
         <maven.compiler.target>21</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <maven.compiler.release>21</maven.compiler.release>
     </properties>
 
     <dependencies>
+        <!-- Add your dependencies here -->
+        <!-- Examples: -->
+        <!-- Spring Boot: https://spring.io/projects/spring-boot -->
+        <!-- Quarkus: https://quarkus.io/ -->
+        <!-- Micronaut: https://micronaut.io/ -->
+        
+        <!-- JUnit for testing -->
         <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-web</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-test</artifactId>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <version>4.13.2</version>
             <scope>test</scope>
         </dependency>
     </dependencies>
 
     <build>
         <plugins>
+            <!-- Maven Compiler Plugin -->
             <plugin>
-                <groupId>org.springframework.boot</groupId>
-                <artifactId>spring-boot-maven-plugin</artifactId>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>3.11.0</version>
+                <configuration>
+                    <source>21</source>
+                    <target>21</target>
+                    <release>21</release>
+                </configuration>
+            </plugin>
+            
+            <!-- Maven Shade Plugin for uber JARs -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-shade-plugin</artifactId>
+                <version>3.5.0</version>
+                <!-- Uncomment to create executable JAR:
+                <executions>
+                    <execution>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>shade</goal>
+                        </goals>
+                        <configuration>
+                            <transformers>
+                                <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
+                                    <mainClass>com.example.App</mainClass>
+                                </transformer>
+                            </transformers>
+                        </configuration>
+                    </execution>
+                </executions>
+                -->
             </plugin>
         </plugins>
     </build>
 </project>
 EOFPOM
 
-  cat > src/main/java/com/example/Application.java <<'EOFJAVA'
+  cat > src/main/java/com/example/App.java <<'EOFJAVA'
 package com.example;
 
-import org.springframework.boot.SpringApplication;
-import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RestController;
-
-@SpringBootApplication
-public class Application {
-
+/**
+ * Hello world!
+ */
+public class App {
     public static void main(String[] args) {
-        SpringApplication.run(Application.class, args);
-    }
-}
-
-@RestController
-class HelloController {
-    
-    @GetMapping("/")
-    public String hello() {
-        return "Hello from Spring Boot in Coder with SDKMAN!";
-    }
-    
-    @GetMapping("/health")
-    public String health() {
-        return "OK";
+        System.out.println("Hello from Java in Coder!");
+        System.out.println("Java version: " + System.getProperty("java.version"));
+        System.out.println("Project directory: " + System.getProperty("user.dir"));
     }
 }
 EOFJAVA
 
-  cat > src/main/resources/application.properties <<'EOFPROPS'
-spring.application.name=springboot-app
-server.port=8080
-logging.level.root=INFO
-EOFPROPS
+  cat > src/test/java/com/example/AppTest.java <<'EOFJAVATEST'
+package com.example;
+
+import org.junit.Test;
+import static org.junit.Assert.*;
+
+/**
+ * Unit test for App.
+ */
+public class AppTest {
+    @Test
+    public void shouldAnswerWithTrue() {
+        assertTrue(true);
+    }
+}
+EOFJAVATEST
 
   echo "✓ Project structure created"
 fi
@@ -175,15 +199,25 @@ mvn dependency:resolve -q 2>/dev/null || true
 
 echo ""
 echo "========================================"
-echo "✓ Java Spring Development Environment Ready!"
+echo "✓ Java Development Environment Ready!"
 echo "========================================"
 echo "Location: ~/project"
 echo ""
 echo "Quick start:"
 echo "  cd ~/project"
+echo "  mvn clean install"
+echo "  mvn test"
+echo "  java -cp target/classes com.example.App"
+echo ""
+echo "For Spring Boot:"
 echo "  mvn spring-boot:run"
 echo ""
-echo "Access your app at: http://localhost:8080"
+echo "For Quarkus:"
+echo "  mvn quarkus:dev"
+echo ""
+echo "For packaged apps:"
+echo "  mvn clean package"
+echo "  java -jar target/app.jar"
 echo ""
 echo "SDKMAN available for version management:"
 echo "  sdk list java"
